@@ -38,11 +38,15 @@ public class PiousPost extends Attack {
 					writer.write("h4x0r|h4x0r|h4x0r|h4x0r");
 					writer.flush();
 					try {
-						Thread.sleep(interval);
+						if (!isInterrupted()) {
+							Thread.sleep(interval);
+						} else {
+							continue;
+						}
 					} catch (InterruptedException e) { }
 				}
 			}
-		} catch (UnknownHostException e) {
+		}catch (UnknownHostException e) {
 			log.error(Thread.currentThread().getName() + " - Could not locate the host (UnknownHostException)");				
 		} catch (ConnectException e) {
 			log.error(Thread.currentThread().getName() + " - Could not connect to the socket address, check the port (ConnectException)");			
@@ -50,7 +54,7 @@ public class PiousPost extends Attack {
 			log.error(Thread.currentThread().getName() + " - Error creating or accessing socket (SocketException)");				
 		} catch (IOException e1) {
 			log.error(Thread.currentThread().getName() + " - I/O error with socket (IOException)");
-		} finally {
+		}finally {
 			stop();
 		}
 	}

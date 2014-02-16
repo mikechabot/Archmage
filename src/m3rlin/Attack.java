@@ -27,7 +27,7 @@ public abstract class Attack implements Runnable {
 	public boolean isInterrupted() {
 		return Thread.currentThread().isInterrupted();
 	}
-	
+		
 	public void stop() {
 		log.info(Thread.currentThread().getName() + " - stopping");
 		isRunning = false;

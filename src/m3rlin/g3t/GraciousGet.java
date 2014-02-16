@@ -43,9 +43,7 @@ public class GraciousGet extends Attack {
 						} else {
 							continue;
 						}
-					} catch (InterruptedException e) {
-						log.error("Thread can't sleep");
-					}
+					} catch (InterruptedException e) { }
 				}
 			}
 		} catch (UnknownHostException e) {

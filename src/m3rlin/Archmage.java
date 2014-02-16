@@ -41,8 +41,9 @@ public class Archmage {
 							exit();
 						}
 					} else {
-						log.info("Attack threads: " + executioner.getActiveCount());
-						log.info("Completed threads: " + executioner.getCompletedTaskCount());
+						log.console("\n   Attack threads: " + executioner.getActiveCount());
+						log.console("\nCompleted threads: " + executioner.getCompletedTaskCount());
+						log.console("\n    Total threads: " + executioner.getTaskCount() + "\n");
 					}
 				}
 			}
@@ -53,7 +54,7 @@ public class Archmage {
 		} catch (IllegalArgumentException e) {			
 			log.console("\n>> Port out of range (IllegalArgumentException)\n");
 		} catch (IOException e) {
-			log.console("\n>> Error acquiriing socket connection (IOException)\n");
+			log.console("\n>> Error acquiring socket connection (IOException)\n");
 		}
 		init();
 		start();
@@ -94,6 +95,9 @@ public class Archmage {
 		log.console("+-------------------+\n");
 		log.console("| Archmage (L7 DoS) |\n");
 		log.console("+-------------------+\n");
+		log.console("\nCommands:\"stop\" - Stops the attack; waits for each scheduled thread to complete");
+		log.console("\n          \"exit\" - Performs a stop action, then exits the application");
+		log.console("\n          \"[enter]\" - Press enter while attacking to check status (won't affect the attack)\n");
 		Archmage archmage;
 		archmage = new Archmage();
 		archmage.init();
