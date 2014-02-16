@@ -4,11 +4,11 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.net.Socket;
 
-import m3rlin.utils.Logger;
+import org.apache.log4j.Logger;
 
 public abstract class Attack implements Runnable {
 	
-	private static Logger log = new Logger("Attack");
+	private static Logger log = Logger.getLogger(Attack.class);
 	
 	protected String name = this.getClass().getSimpleName();
 	protected Socket socket;
@@ -24,12 +24,12 @@ public abstract class Attack implements Runnable {
 		this.interval = interval;
 	}
 	
-	public boolean isInterrupted() {
+	public boolean isInterrupted() {		
 		return Thread.currentThread().isInterrupted();
 	}
 		
 	public void stop() {
-		log.info(Thread.currentThread().getName() + " - stopping");
+		log.info("Stopping");
 		isRunning = false;
 		try {
 			socket.close();

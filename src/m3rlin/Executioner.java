@@ -1,17 +1,22 @@
 package m3rlin;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.log4j.Logger;
+
 import m3rlin.g3t.GraciousGet;
 import m3rlin.p0st.PiousPost;
-import m3rlin.utils.Logger;
+
 
 public class Executioner implements Runnable {
 
-	private static Logger log = new Logger("Executioner");
+	private static Logger log = Logger.getLogger(Executioner.class);
 	
 	private Thread thread;
 	private BlockingQueue<Runnable> piousQueue;
@@ -19,15 +24,46 @@ public class Executioner implements Runnable {
 	private ThreadPoolExecutor pious;
 	private ThreadPoolExecutor gracious;
 	
+	List<Future<?>> piousPosts = new ArrayList<Future<?>>();
+	List<Future<?>> graciousGets = new ArrayList<Future<?>>();
+	
 	private String host;
 	private int port;	
-	private int connections = 200;
+	private int connections = 1;
 	private int interval = 2000;
 	boolean isRunning;
 	
 	public Executioner(String host, int port) {
 		this.host = host;
 		this.port = port;
+	}	
+	
+	public boolean isRunning() {
+		return isRunning;
+	}
+	
+	public int getGraciousActiveCount() {		
+		return gracious.getActiveCount();
+	}
+	
+	public int getPiousActiveCount() {
+		return pious.getActiveCount();
+	}
+	
+	public long getGraciousCompletedCount() {
+		return gracious.getCompletedTaskCount();
+	}
+	
+	public long getPiousCompletedCount() {
+		return pious.getCompletedTaskCount();
+	}
+	
+	public long getGraciousTaskCount() {
+		return gracious.getTaskCount();
+	}
+	
+	public long getPiousTaskCount() {
+		 return pious.getTaskCount();
 	}
 	
 	public void start() {
@@ -44,41 +80,40 @@ public class Executioner implements Runnable {
 	
 	public void stop() {		
 		isRunning = false;
+		System.out.print("\n>> Commencing executioner shutdown...\n");
 		pious.shutdownNow();
 		gracious.shutdownNow();
-		log.console("\n>> Commencing executioners shutdown...");
+		System.out.print("\n>> Cancelling futures...\n");
+		for (Future<?> pp : piousPosts) {
+			log.info("Cancelleing piety (" + pp.toString() + ")");
+			pp.cancel(true);
+		}
+		for (Future<?> gg : graciousGets) {
+			log.info("Cancelleing gracious (" + gg.toString() + ")");
+			gg.cancel(true);
+		}
 		try {
-			log.console("\n>> Waiting for threads to terminate...\n\n");
-			pious.awaitTermination(5*60*1000, TimeUnit.MILLISECONDS);			
-			gracious.awaitTermination(5*60*1000, TimeUnit.MILLISECONDS);
+			System.out.print("\n>> Awaiting further thread termination...\n");
+			pious.awaitTermination(30*1000, TimeUnit.MILLISECONDS);
+			gracious.awaitTermination(30*1000, TimeUnit.MILLISECONDS);
 		} catch (InterruptedException e) { }
-		log.console("\n>> Executioners shutdown complete...");
-	}
-	
-	public boolean isRunning() {
-		return isRunning;
-	}
-	
-	public int getActiveCount() {		
-		return gracious.getActiveCount() + pious.getActiveCount();
-	}
-	
-	public long getCompletedTaskCount() {
-		return gracious.getCompletedTaskCount() + pious.getCompletedTaskCount();
-	}
-	
-	public long getTaskCount() {
-		return gracious.getTaskCount() + pious.getTaskCount();
+		System.out.print("\n>> Executioner shutdown complete...\n");
 	}
 	
 	@Override
 	public void run() {
 		while(isRunning) {
 			if (pious.getQueue().size() < connections) {
-				pious.submit(new PiousPost(host, port, interval));
+				Future<?> future = pious.submit(new PiousPost(host, port, interval));
+				log.debug("Pious queue size: " + pious.getQueue().size());
+				log.info("Submitting pious future (" + future.toString() +")");
+				piousPosts.add(future);		
 			}
 			if (gracious.getQueue().size() < connections) {
-				gracious.submit(new GraciousGet(host, port, interval));
+				Future<?> future = gracious.submit(new GraciousGet(host, port, interval));
+				log.debug("Gracious queue size: " + gracious.getQueue().size());
+				log.info("Submitting gracious future (" + future.toString() +")");
+				graciousGets.add(future);		
 			}
 		}
 	}
