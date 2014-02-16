@@ -8,6 +8,8 @@ import m3rlin.utils.Logger;
 
 public abstract class Attack implements Runnable {
 	
+	private static Logger log = new Logger("Attack");
+	
 	protected String name = this.getClass().getSimpleName();
 	protected Socket socket;
 	protected BufferedWriter writer;
@@ -27,7 +29,7 @@ public abstract class Attack implements Runnable {
 	}
 	
 	public void stop() {
-		Logger.info(Thread.currentThread().getName() + " - stopping");
+		log.info(Thread.currentThread().getName() + " - stopping");
 		isRunning = false;
 		try {
 			socket.close();
