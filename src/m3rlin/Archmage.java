@@ -41,9 +41,9 @@ public class Archmage {
 							exit();
 						}
 					} else {
-						log.console("\n   Attack threads: " + executioner.getActiveCount());
-						log.console("\nCompleted threads: " + executioner.getCompletedTaskCount());
-						log.console("\n    Total threads: " + executioner.getTaskCount() + "\n");
+						log.console("\n>>    Attack threads: " + executioner.getActiveCount());
+						log.console("\n>> Completed threads: " + executioner.getCompletedTaskCount());
+						log.console("\n>>     Total threads: " + executioner.getTaskCount() + "\n");
 					}
 				}
 			}
