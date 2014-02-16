@@ -15,7 +15,7 @@ import m3rlin.utils.Logger;
 public class GraciousGet extends Attack {
 
 	private static Logger log = new Logger("GraciousGet");
-	
+
 	public GraciousGet(String hostname, int port, int interval) {
 		super(hostname, port, interval);		
 	}

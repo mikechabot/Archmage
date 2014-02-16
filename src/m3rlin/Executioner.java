@@ -21,7 +21,7 @@ public class Executioner implements Runnable {
 	
 	private String host;
 	private int port;	
-	private int connections = 1;
+	private int connections = 200;
 	private int interval = 2000;
 	boolean isRunning;
 	
