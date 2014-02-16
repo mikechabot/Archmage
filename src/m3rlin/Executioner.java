@@ -6,15 +6,19 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import m3rlin.g3t.GraciousGet;
+import m3rlin.p0st.PiousPost;
+import m3rlin.utils.Logger;
 
 public class Executioner implements Runnable {
 
 	private Thread thread;
-	private BlockingQueue<Runnable> queue;
-	private ThreadPoolExecutor executor;
+	private BlockingQueue<Runnable> piousQueue;
+	private BlockingQueue<Runnable> graciousQueue;
+	private ThreadPoolExecutor pious;
+	private ThreadPoolExecutor gracious;
 	private String host;
 	private int port;	
-	private int threadCount = 400;
+	private int connections = 400;
 	private int interval = 2000;
 	boolean isRunning;
 	
@@ -25,8 +29,10 @@ public class Executioner implements Runnable {
 	
 	public void start() {
 		isRunning = true;
-		queue = new ArrayBlockingQueue<Runnable>(100);
-		executor = new ThreadPoolExecutor(threadCount, threadCount + 50, interval + 500, TimeUnit.MILLISECONDS, queue, new ThreadPoolExecutor.DiscardPolicy());
+		piousQueue = new ArrayBlockingQueue<Runnable>(connections);
+		graciousQueue = new ArrayBlockingQueue<Runnable>(connections);
+		pious = new ThreadPoolExecutor(connections, connections + 50, interval + 500, TimeUnit.MILLISECONDS, piousQueue, new ThreadPoolExecutor.DiscardPolicy());
+		gracious = new ThreadPoolExecutor(connections, connections + 50, interval + 500, TimeUnit.MILLISECONDS, graciousQueue, new ThreadPoolExecutor.DiscardPolicy());
 		if (thread == null) { 
 			thread = new Thread(this);
 			thread.start();
@@ -35,7 +41,18 @@ public class Executioner implements Runnable {
 	
 	public void stop() {		
 		isRunning = false;
-		executor.shutdown();
+		pious.shutdown();
+		gracious.shutdown();
+		Logger.console("\n>> Commencing executioners shutdown...\n");
+		try {
+			Logger.console(">> Waiting for threads to terminate...\n\n");
+			pious.awaitTermination(5*60*1000, TimeUnit.MILLISECONDS);
+			gracious.awaitTermination(5*60*1000, TimeUnit.MILLISECONDS);
+		} catch (InterruptedException e) {
+			pious.shutdownNow();
+			gracious.shutdownNow();
+		}
+		Logger.console("\n>> Executioners shutdown complete...");
 	}
 	
 	public boolean isRunning() {
@@ -43,13 +60,18 @@ public class Executioner implements Runnable {
 	}
 	
 	public int getActiveCount() {
-		return executor.getActiveCount();
+		return gracious.getActiveCount() + pious.getActiveCount();
 	}
-		
+	
+	public long getCompletedTaskCount() {
+		return gracious.getCompletedTaskCount() + pious.getCompletedTaskCount();
+	}
+	
 	@Override
 	public void run() {
-		do {
-			executor.submit(new GraciousGet(host, port, interval));
-		} while (isRunning);
+		while(isRunning) {
+			gracious.submit(new GraciousGet(host, port, interval));
+			pious.submit(new PiousPost(host, port, interval));
+		}
 	}
 }
