@@ -6,8 +6,11 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Scanner;
 
+import org.apache.log4j.Logger;
+
 public class Archmage {
 
+	private static Logger log = Logger.getLogger(Archmage.class);
 	private static final String STOP_ATTACK = "STOP";
 	private static final String EXIT_ARCHMAGE = "EXIT";
 
@@ -37,9 +40,7 @@ public class Archmage {
 							exit();
 						}
 					} else {
-						System.out.print("\n>>   PiousPost Attack Threads: " + executioner.getPiousActiveCount());
-						System.out.print("\n>> GraciousGet Attack Threads: " + executioner.getGraciousActiveCount());
-						System.out.print("\n>>       Total Attack Threads: " + (executioner.getPiousActiveCount() + executioner.getGraciousActiveCount()) + "\n");
+						printSummary();						
 					}
 				}
 			}
@@ -57,15 +58,15 @@ public class Archmage {
 	}
 	
 	public void stop() throws IOException {
-		System.out.print("\n>> Stopping attack...");
+		log.info("Stopping attack...");
 		executioner.stop();
 		socket.close();
-		System.out.print("\n>> Attack stopped...\n");
+		log.info("Attack stopped...\n");
 	}
 	
 	public void exit() throws IOException {
 		stop();
-		System.out.print("\n>> Exiting...");
+		log.info("Exiting...");
 		System.exit(0);
 	}
 	
@@ -87,15 +88,34 @@ public class Archmage {
 		}		
 	}
 	
+	public void printSummary() {
+		System.out.print("\n>> +------------------------------+");
+		System.out.print("\n>> | ATTACK THREADS / CONNECTIONS |");
+		System.out.print("\n>> +------------------------------+");
+		System.out.print("\n>>    **ACTIVE**");
+		System.out.print("\n>>      |--------Total (" + (executioner.getGraciousActiveCount() + executioner.getPiousActiveCount()) + ")");
+		System.out.print("\n>>      |----PiousPost (" + executioner.getPiousActiveCount() + ")");
+		System.out.print("\n>>      |--GraciousGet (" + executioner.getGraciousActiveCount() + ")");
+		System.out.print("\n>>      |");
+		System.out.print("\n>>    **COMPLETED**");
+		System.out.print("\n>>      |--------Total (" + (executioner.getGraciousCompletedCount() + executioner.getPiousCompletedCount()) + ")");
+		System.out.print("\n>>      |----PiousPost (" + executioner.getPiousCompletedCount() + ")");
+		System.out.print("\n>>      |--GraciousGet (" + executioner.getGraciousCompletedCount() + ")");
+		System.out.print("\n>>      |");
+		System.out.print("\n>>    **TOTAL SCHEDULED**");
+		System.out.print("\n>>      |--------Total (" + (executioner.getGraciousTaskCount() + executioner.getPiousTaskCount()) + ")");
+		System.out.print("\n>>      |----PiousPost (" + executioner.getPiousTaskCount() + ")");
+		System.out.print("\n>>      |--GraciousGet (" + executioner.getGraciousTaskCount() + ")\n\n");
+	}
+	
 	public static void main(String[] args) {
 		System.out.print("+-------------------+\n");
 		System.out.print("| Archmage (L7 DoS) |\n");
 		System.out.print("+-------------------+\n");
 		System.out.print("\nCommands:\"stop\" - Stops the attack; waits for each scheduled thread to complete");
 		System.out.print("\n          \"exit\" - Performs a stop action, then exits the application");
-		System.out.print("\n          \"[enter]\" - Press enter while attacking to check status (won't affect the attack)\n");
-		Archmage archmage;
-		archmage = new Archmage();
+		System.out.print("\n          \"[enter]\" - Press enter while attacking to check status (won't affect the attack)\n");		
+		Archmage archmage = new Archmage();
 		archmage.init();
 		archmage.start();
 	}

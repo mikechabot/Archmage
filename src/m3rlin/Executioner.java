@@ -1,7 +1,5 @@
 package m3rlin;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Future;
@@ -11,7 +9,9 @@ import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 
 import m3rlin.g3t.GraciousGet;
+import m3rlin.g3t.GraciousThreadFactory;
 import m3rlin.p0st.PiousPost;
+import m3rlin.p0st.PiousThreadFactory;
 
 
 public class Executioner implements Runnable {
@@ -24,13 +24,11 @@ public class Executioner implements Runnable {
 	private ThreadPoolExecutor pious;
 	private ThreadPoolExecutor gracious;
 	
-	List<Future<?>> piousPosts = new ArrayList<Future<?>>();
-	List<Future<?>> graciousGets = new ArrayList<Future<?>>();
-	
 	private String host;
 	private int port;	
-	private int connections = 1;
+	private int connections = 200;
 	private int interval = 2000;
+	private int maxQueue = connections + 50;
 	boolean isRunning;
 	
 	public Executioner(String host, int port) {
@@ -70,8 +68,8 @@ public class Executioner implements Runnable {
 		isRunning = true;
 		piousQueue = new ArrayBlockingQueue<Runnable>(connections);
 		graciousQueue = new ArrayBlockingQueue<Runnable>(connections);
-		pious = new ThreadPoolExecutor(connections, connections, interval + 500, TimeUnit.MILLISECONDS, piousQueue, new ThreadPoolExecutor.DiscardPolicy());
-		gracious = new ThreadPoolExecutor(connections, connections, interval + 500, TimeUnit.MILLISECONDS, graciousQueue, new ThreadPoolExecutor.DiscardPolicy());
+		pious = new ThreadPoolExecutor(connections, connections, interval + 500, TimeUnit.MILLISECONDS, piousQueue, new PiousThreadFactory(), new ThreadPoolExecutor.DiscardPolicy());
+		gracious = new ThreadPoolExecutor(connections, connections, interval + 500, TimeUnit.MILLISECONDS, graciousQueue,  new GraciousThreadFactory(), new ThreadPoolExecutor.DiscardPolicy());
 		if (thread == null) { 
 			thread = new Thread(this);
 			thread.start();
@@ -80,40 +78,29 @@ public class Executioner implements Runnable {
 	
 	public void stop() {		
 		isRunning = false;
-		System.out.print("\n>> Commencing executioner shutdown...\n");
+		log.info("Commencing executioner shutdown...");
 		pious.shutdownNow();
 		gracious.shutdownNow();
-		System.out.print("\n>> Cancelling futures...\n");
-		for (Future<?> pp : piousPosts) {
-			log.info("Cancelleing piety (" + pp.toString() + ")");
-			pp.cancel(true);
-		}
-		for (Future<?> gg : graciousGets) {
-			log.info("Cancelleing gracious (" + gg.toString() + ")");
-			gg.cancel(true);
-		}
 		try {
-			System.out.print("\n>> Awaiting further thread termination...\n");
+			log.info("Awaiting further thread termination...");
 			pious.awaitTermination(30*1000, TimeUnit.MILLISECONDS);
 			gracious.awaitTermination(30*1000, TimeUnit.MILLISECONDS);
 		} catch (InterruptedException e) { }
-		System.out.print("\n>> Executioner shutdown complete...\n");
+		log.info("Executioner shutdown complete...");
 	}
 	
 	@Override
 	public void run() {
 		while(isRunning) {
-			if (pious.getQueue().size() < connections) {
+			if (pious.getQueue().size() < maxQueue) {
 				Future<?> future = pious.submit(new PiousPost(host, port, interval));
 				log.debug("Pious queue size: " + pious.getQueue().size());
 				log.info("Submitting pious future (" + future.toString() +")");
-				piousPosts.add(future);		
 			}
-			if (gracious.getQueue().size() < connections) {
+			if (gracious.getQueue().size() < maxQueue) {
 				Future<?> future = gracious.submit(new GraciousGet(host, port, interval));
 				log.debug("Gracious queue size: " + gracious.getQueue().size());
-				log.info("Submitting gracious future (" + future.toString() +")");
-				graciousGets.add(future);		
+				log.info("Submitting gracious future (" + future.toString() +")");	
 			}
 		}
 	}

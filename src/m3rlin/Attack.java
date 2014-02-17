@@ -29,7 +29,7 @@ public abstract class Attack implements Runnable {
 	}
 		
 	public void stop() {
-		log.info("Stopping");
+		log.info("Stopping dead attack thread...");
 		isRunning = false;
 		try {
 			socket.close();
