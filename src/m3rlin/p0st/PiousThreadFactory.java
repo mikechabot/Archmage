@@ -9,7 +9,7 @@ import org.apache.log4j.Logger;
 
 public class PiousThreadFactory implements ThreadFactory {
 
-	private static Logger log = Logger.getLogger(GraciousThreadFactory.class);
+	private static Logger log = Logger.getLogger(PiousThreadFactory.class);
 	static final AtomicInteger poolNumber = new AtomicInteger(1);
 	
 	ThreadGroup group;
