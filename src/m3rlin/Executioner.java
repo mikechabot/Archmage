@@ -13,7 +13,6 @@ import m3rlin.g3t.GraciousThreadFactory;
 import m3rlin.p0st.PiousPost;
 import m3rlin.p0st.PiousThreadFactory;
 
-
 public class Executioner implements Runnable {
 
 	private static Logger log = Logger.getLogger(Executioner.class);
@@ -96,6 +95,11 @@ public class Executioner implements Runnable {
 			if (graciousQueue.remainingCapacity() > 0) {
 				Future<?> future = gracious.submit(new GraciousGet(host, port, interval));				
 				log.debug("Submitting gracious future (" + future.toString() +"), graciousQueue=" + graciousQueue.size());	
+			}
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				// Do nothing
 			}
 		}
 	}
