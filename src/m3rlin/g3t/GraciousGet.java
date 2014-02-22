@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import org.apache.log4j.Logger;
 
-import m3rlin.Attack;
+import m3rlin.a77ack.Attack;
 
 public class GraciousGet extends Attack {
 

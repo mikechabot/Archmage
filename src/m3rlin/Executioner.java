@@ -23,13 +23,15 @@ public class Executioner implements Runnable {
 	
 	private String host;
 	private int port;	
-	private int connections = 200;
-	private int interval = 2000;
+	private int connections;
+	private int interval;
 	boolean isRunning;
 	
-	public Executioner(String host, int port) {
+	public Executioner(String host, int port, int connections, int interval) {
 		this.host = host;
 		this.port = port;
+		this.connections = connections;
+		this.interval = interval;
 	}	
 	
 	public boolean isRunning() {

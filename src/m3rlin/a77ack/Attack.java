@@ -1,4 +1,4 @@
-package m3rlin;
+package m3rlin.a77ack;
 
 import java.io.BufferedWriter;
 import java.io.IOException;

